@@ -1,0 +1,27 @@
+backend:
+  name: git-gateway
+  branch: main
+media_folder: "public/uploads"
+public_folder: "/uploads"
+collections:
+  - name: "news"
+    label: "الأخبار"
+    folder: "content/news"
+    create: true
+    fields:
+      - { label: "العنوان", name: "title", widget: "string" }
+      - { label: "المحتوى", name: "content", widget: "text" }
+  - name: "academic-videos"
+    label: "فيديوهات أكاديمية"
+    folder: "content/academic-videos"
+    create: true
+    fields:
+      - { label: "العنوان", name: "title", widget: "string" }
+      - { label: "رابط الفيديو (YouTube Embed)", name: "url", widget: "string" }
+  - name: "major-videos"
+    label: "فيديوهات تخصصية"
+    folder: "content/major-videos"
+    create: true
+    fields:
+      - { label: "العنوان", name: "title", widget: "string" }
+      - { label: "رابط الفيديو (YouTube Embed)", name: "url", widget: "string" }
