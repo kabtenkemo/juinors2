@@ -109,15 +109,15 @@
 
         // عرض الأخبار
         async function displayNews() {
-            const newsList = document.getElementById('newsList');
-            newsList.innerHTML = '';
-            const news = await fetchData('news');
-            news.forEach(item => {
-                const li = document.createElement('li');
-                li.innerHTML = `<strong>${item.title}</strong>: ${item.content}`;
-                newsList.appendChild(li);
-            });
-        }
+    const newsList = document.getElementById('newsList');
+    newsList.innerHTML = '';
+    const news = await fetchData('news');
+    news.forEach(item => {
+        const li = document.createElement('li');
+        li.innerHTML = `<strong>${item.title}</strong>: ${item.content}`;
+        newsList.appendChild(li);
+    });
+}
 
         // عرض الفيديوهات
         async function displayVideos() {
