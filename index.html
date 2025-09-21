@@ -1,0 +1,136 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>موقع للطلبة الجدد</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>مرحباً بالطلبة الجدد!</h1>
+        <nav>
+            <a href="#home">شرح المواد والتخصص</a>
+            <a href="#news">آخر الأخبار</a>
+            <a href="#videos">فيديوهات أكاديمية وتخصصية</a>
+        </nav>
+    </header>
+
+    <section id="home">
+        <h2>شرح المواد والتخصص</h2>
+        <p>هنا يمكنك شرح التخصص والمواد للطلبة الجدد. يمكنك تعديل هذا النص في الكود لإضافة تفاصيلك الخاصة.</p>
+        <p>مثال: التخصص في هندسة الحاسب يشمل مواد مثل البرمجة، الشبكات، والذكاء الاصطناعي.</p>
+    </section>
+
+    <section id="news" style="display:none;">
+        <h2>آخر الأخبار</h2>
+        <ul id="newsList"></ul>
+    </section>
+
+    <section id="videos" style="display:none;">
+        <h2>فيديوهات أكاديمية وتخصصية</h2>
+        <h3>فيديوهات أكاديمية</h3>
+        <div id="academicVideos"></div>
+        <h3>فيديوهات تخصصية</h3>
+        <div id="majorVideos"></div>
+    </section>
+
+    <script type="module">
+        // تحميل البيانات من Netlify CMS (المخزنة في Git)
+        async function fetchData(collection) {
+            const response = await fetch(`/.netlify/functions/get-${collection}`);
+            return await response.json();
+        }
+
+        // عرض الأخبار
+        async function displayNews() {
+            const newsList = document.getElementById('newsList');
+            newsList.innerHTML = '';
+            const news = await fetchData('news');
+            news.forEach(item => {
+                const li = document.createElement('li');
+                li.innerHTML = `<strong>${item.title}</strong>: ${item.content}`;
+                newsList.appendChild(li);
+            });
+        }
+
+        // عرض الفيديوهات
+        async function displayVideos() {
+            const academicVideos = document.getElementById('academicVideos');
+            const majorVideos = document.getElementById('majorVideos');
+            academicVideos.innerHTML = '';
+            majorVideos.innerHTML = '';
+
+            const academics = await fetchData('academic-videos');
+            academics.forEach(item => {
+                const div = document.createElement('div');
+                div.innerHTML = `<p><strong>${item.title}</strong></p><iframe src="${item.url}" frameborder="0" allowfullscreen></iframe>`;
+                academicVideos.appendChild(div);
+            });
+
+            const majors = await fetchData('major-videos');
+            majors.forEach(item => {
+                const div = document.createElement('div');
+                div.innerHTML = `<p><strong>${item.title}</strong></p><iframe src="${item.url}" frameborder="0" allowfullscreen></iframe>`;
+                majorVideos.appendChild(div);
+            });
+        }
+
+        // التنقل بين الصفحات
+        const sections = document.querySelectorAll('section');
+        document.querySelectorAll('nav a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = this.getAttribute('href').substring(1);
+                sections.forEach(sec => sec.style.display = 'none');
+                document.getElementById(target).style.display = 'block';
+
+                if (target === 'news') displayNews();
+                if (target === 'videos') displayVideos();
+            });
+        });
+
+        // عرض الصفحة الرئيسية افتراضياً
+        document.getElementById('home').style.display = 'block';
+    </script>
+</body>
+</html>
