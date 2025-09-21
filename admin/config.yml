@@ -1,5 +1,6 @@
 backend:
-  name: git-gateway
+  name: github
+  repo: kabtenkemo/juniors2
   branch: main
 
 media_folder: "public/uploads"
