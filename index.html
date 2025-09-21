@@ -1,75 +1,21 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>موقع للطلبة الجدد</title>
-    <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            margin: 20px;
-            background-color: #f9f9f9;
-            color: #333;
-        }
-        header {
-            text-align: center;
-            padding: 20px;
-            background-color: #e0f7fa;
-            border-radius: 8px;
-        }
-        nav {
-            background: #0288d1;
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-        }
-        nav a {
-            margin: 10px;
-            text-decoration: none;
-            color: white;
-            font-weight: bold;
-        }
-        nav a:hover {
-            color: #ffca28;
-        }
-        section {
-            margin-top: 20px;
-            padding: 20px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        ul {
-            list-style-type: none;
-            padding: 0;
-        }
-        li {
-            margin-bottom: 10px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #ddd;
-        }
-        iframe {
-            width: 100%;
-            height: 315px;
-            border-radius: 5px;
-            margin-top: 10px;
-        }
-        h1, h2, h3 {
-            color: #0277bd;
-        }
-    </style>
-<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+    <title>مرحباً بالطلبة الجدد</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <header>
         <h1>مرحباً بالطلبة الجدد!</h1>
-        <nav>
-            <a href="#home">شرح المواد والتخصص</a>
-            <a href="#news">آخر الأخبار</a>
-            <a href="#videos">فيديوهات أكاديمية وتخصصية</a>
-            <a href="/admin">إضافة محتوى</a>
-        </nav>
     </header>
+    <nav>
+        <a href="#home">شرح المواد والتخصص</a>
+        <a href="#news">آخر الأخبار</a>
+        <a href="#videos">فيديوهات أكاديمية وتخصصية</a>
+        <a href="/admin">إضافة محتوى</a>
+    </nav>
 
     <section id="home">
         <h2>شرح المواد والتخصص</h2>
@@ -88,60 +34,55 @@
 
     <section id="videos" style="display:none;">
         <h2>فيديوهات أكاديمية وتخصصية</h2>
-        <h3>فيديوهات أكاديمية</h3>
         <div id="academicVideos"></div>
-        <h3>فيديوهات تخصصية</h3>
         <div id="majorVideos"></div>
     </section>
 
     <script type="module">
-        // جلب البيانات من Netlify Functions
         async function fetchData(collection) {
             try {
                 const response = await fetch(`/.netlify/functions/get-${collection}`);
-                if (!response.ok) throw new Error('Network response was not ok');
-                return await response.json();
+                if (!response.ok) throw new Error('Network response was not ok ' + response.status);
+                const data = await response.json();
+                console.log('Fetched ' + collection + ':', data);
+                return data;
             } catch (error) {
-                console.error('Error fetching data:', error);
+                console.error('Fetch error for ' + collection + ':', error);
                 return [];
             }
         }
 
-        // عرض الأخبار
         async function displayNews() {
-    const newsList = document.getElementById('newsList');
-    newsList.innerHTML = '';
-    const news = await fetchData('news');
-    news.forEach(item => {
-        const li = document.createElement('li');
-        li.innerHTML = `<strong>${item.title}</strong>: ${item.content}`;
-        newsList.appendChild(li);
-    });
-}
+            const newsList = document.getElementById('newsList');
+            newsList.innerHTML = '';
+            const news = await fetchData('news');
+            console.log('Display news:', news);
+            if (news.length > 0) {
+                news.forEach(item => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `<strong>${item.title}</strong>: ${item.content || 'لا يوجد محتوى'}`;
+                    newsList.appendChild(li);
+                });
+            } else {
+                newsList.innerHTML = '<li>لا يوجد أخبار</li>';
+            }
+        }
 
-        // عرض الفيديوهات
         async function displayVideos() {
-            const academicVideos = document.getElementById('academicVideos');
-            const majorVideos = document.getElementById('majorVideos');
-            academicVideos.innerHTML = '';
-            majorVideos.innerHTML = '';
-
-            const academics = await fetchData('academic-videos');
-            academics.forEach(item => {
-                const div = document.createElement('div');
-                div.innerHTML = `<p><strong>${item.title}</strong></p><iframe src="${item.url}" frameborder="0" allowfullscreen></iframe>`;
-                academicVideos.appendChild(div);
+            const academicDiv = document.getElementById('academicVideos');
+            const majorDiv = document.getElementById('majorVideos');
+            academicDiv.innerHTML = '<h3>فيديوهات أكاديمية</h3>';
+            majorDiv.innerHTML = '<h3>فيديوهات تخصصية</h3>';
+            const academicVideos = await fetchData('academic-videos');
+            const majorVideos = await fetchData('major-videos');
+            academicVideos.forEach(item => {
+                academicDiv.innerHTML += `<iframe src="${item.url}"></iframe>`;
             });
-
-            const majors = await fetchData('major-videos');
-            majors.forEach(item => {
-                const div = document.createElement('div');
-                div.innerHTML = `<p><strong>${item.title}</strong></p><iframe src="${item.url}" frameborder="0" allowfullscreen></iframe>`;
-                majorVideos.appendChild(div);
+            majorVideos.forEach(item => {
+                majorDiv.innerHTML += `<iframe src="${item.url}"></iframe>`;
             });
         }
 
-        // التنقل بين الصفحات
         const sections = document.querySelectorAll('section');
         document.querySelectorAll('nav a').forEach(link => {
             link.addEventListener('click', function(e) {
@@ -154,23 +95,13 @@
                 const target = href.substring(1);
                 sections.forEach(sec => sec.style.display = 'none');
                 document.getElementById(target).style.display = 'block';
-
                 if (target === 'news') displayNews();
                 if (target === 'videos') displayVideos();
             });
         });
 
-        // عرض الصفحة الرئيسية افتراضياً
         document.getElementById('home').style.display = 'block';
+        displayNews(); // استدعاء يدوي
     </script>
-    <script>
-  if (window.netlifyIdentity) {
-    window.netlifyIdentity.on("init", user => {
-      if (!user) {
-        window.netlifyIdentity.open(); // يفتح الـ modal للتسجيل إذا كان في invite_token
-      }
-    });
-  }
-</script>
 </body>
 </html>
