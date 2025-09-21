@@ -61,15 +61,6 @@
 <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 </head>
 <body>
-    <script>
-  if (window.netlifyIdentity) {
-    window.netlifyIdentity.on("init", user => {
-      if (!user) {
-        window.netlifyIdentity.open(); // يفتح الـ modal للتسجيل إذا كان في invite_token
-      }
-    });
-  }
-</script>
     <header>
         <h1>مرحباً بالطلبة الجدد!</h1>
         <nav>
@@ -172,5 +163,14 @@
         // عرض الصفحة الرئيسية افتراضياً
         document.getElementById('home').style.display = 'block';
     </script>
+    <script>
+  if (window.netlifyIdentity) {
+    window.netlifyIdentity.on("init", user => {
+      if (!user) {
+        window.netlifyIdentity.open(); // يفتح الـ modal للتسجيل إذا كان في invite_token
+      }
+    });
+  }
+</script>
 </body>
 </html>
